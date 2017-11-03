@@ -59,10 +59,12 @@ namespace KKKPr
             }
         }
 
-        if (flagcheckConnection)
+            if (flagcheckConnection)
+                logger.Debug("Connection found checking is still connected.");
            isStillConnected(CHECKHOST);
     }
     bool isStillConnected(string host) {
+            logger.Debug("Checking connection in isStillConnected");
        if (checkConnectionwithPing(host))
         {
                 //Create and send Log.
@@ -81,12 +83,14 @@ namespace KKKPr
                 } finally {
                 }
             }
+            logger.Trace("No connection found for logging.");
         return false;
     }
     public bool checkConnectionwithPing(string host)
     {
         try
         {
+            logger.Debug("Trying to ping google");
             Ping myPing = new Ping();
             byte[] buffer = new byte[32];
             int timeout = 1000;
@@ -94,8 +98,9 @@ namespace KKKPr
             PingReply reply = myPing.Send(host, timeout, buffer, pingOptions);
             return (reply.Status == IPStatus.Success);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+               logger.Trace("Failed to connect." + ex.ToString());
             return false;
         }
     }
