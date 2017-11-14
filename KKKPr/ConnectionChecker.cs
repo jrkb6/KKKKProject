@@ -1,4 +1,5 @@
-﻿using NLog;
+﻿using KKKPr.ServiceReference1;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,12 +15,13 @@ using System.Threading.Tasks;
 
 namespace KKKPr
 {
-    public class ConnectionChecker
+    public class ConnectionChecker: IDisposable
     {
     private static string mWebServiceInternet = System.Configuration.ConfigurationManager.AppSettings["WebServiceInternet"]; //webServiceInfo
     private static Logger logger = LogManager.GetCurrentClassLogger(); //logger for developer
     private const string CHECKHOST = "google.com";  //const connaction checker
-    Log lg;
+
+        LogSender lgs = new LogSender();
     public ConnectionChecker()
     {
         NetworkChange.NetworkAddressChanged += new NetworkAddressChangedEventHandler(NetworkChange_NetworkAddressChanged);
@@ -68,16 +70,23 @@ namespace KKKPr
        if (checkConnectionwithPing(host))
         {
                 //Create and send Log.
-                User usr = new User(getUserName());
-                Machine mch = new Machine(Environment.MachineName, Dns.GetHostAddresses(Environment.MachineName)[1].ToString());
-                Log log = new Log(usr,mch,DateTime.Now);
+                //User usr = new User(getUserName());
+                //Machine mch = new Machine(Environment.MachineName, Dns.GetHostAddresses(Environment.MachineName)[1].ToString());
+                Log log = new Log(getUserName(), Environment.MachineName, Dns.GetHostAddresses(Environment.MachineName)[1].ToString(), DateTime.Now);
                 log.logDate = DateTime.Now;
 
-                logger.Trace("Log created with: " + log.user.username +" " +log.machine.machineIp);
+                logger.Trace("Log created with: " + log.user +" " +log.machine);
                 //send log 
                 try {
                     logger.Trace("Trying to send Log");
-                    LogSender.sendLog(log);
+                    logger.Debug(" Map to wcf object");
+                    CompositeLog cmpLog = new CompositeLog();
+                    log.user = cmpLog.user;
+                    log.machine = cmpLog.machine;
+                    log.machineIP = cmpLog.machineIP;
+                    log.logDate = cmpLog.logDate;
+                    logger.Trace(" Created succesfully: " + log.user.Equals(cmpLog.user).ToString());
+                   lgs.sendLog(cmpLog);
                 } catch (Exception ex) {
                     logger.Debug("Failure to send " + ex.ToString());
                 } finally {
@@ -147,45 +156,51 @@ namespace KKKPr
             }
 
         }
+
+        public void Dispose()
+        {
+            NetworkChange.NetworkAddressChanged -= new NetworkAddressChangedEventHandler(NetworkChange_NetworkAddressChanged);
+            NetworkChange.NetworkAvailabilityChanged -= new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
+        }
         /* void CheckConnectionState()
-             {
-                 try
-                 {
-                     string resInternet = CheckConnection(mWebServiceInternet);
-                     if (!(resInternet == "" || resInternet.StartsWith("hata")))
-                     {
-                         // WriteLog("Network Changed.");
-                         string[] arr = resInternet.Split('#');
-                         DateTime userLogDate = DateTime.Now;
-                         DateTime parsed = DateTime.Now;
+    {
+        try
+        {
+            string resInternet = CheckConnection(mWebServiceInternet);
+            if (!(resInternet == "" || resInternet.StartsWith("hata")))
+            {
+                // WriteLog("Network Changed.");
+                string[] arr = resInternet.Split('#');
+                DateTime userLogDate = DateTime.Now;
+                DateTime parsed = DateTime.Now;
 
-                         //log olarak webservis saatini yazalim istendi
-                         if (arr.Length > 0)
-                         {
-                             if (DateTime.TryParseExact(arr[1], "dd/MM/yyyy hh:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out parsed))
-                                 userLogDate = parsed;
-                         }
-                         string strCurrentUserName = Environment.UserName;
-                         strCurrentUserName = GetUserName().username;
-                         if (string.IsNullOrEmpty(strCurrentUserName))
-                         {
-                             System.Diagnostics.Process[] objArrProcess = System.Diagnostics.Process.GetProcessesByName("explorer");
+                //log olarak webservis saatini yazalim istendi
+                if (arr.Length > 0)
+                {
+                    if (DateTime.TryParseExact(arr[1], "dd/MM/yyyy hh:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out parsed))
+                        userLogDate = parsed;
+                }
+                string strCurrentUserName = Environment.UserName;
+                strCurrentUserName = GetUserName().username;
+                if (string.IsNullOrEmpty(strCurrentUserName))
+                {
+                    System.Diagnostics.Process[] objArrProcess = System.Diagnostics.Process.GetProcessesByName("explorer");
 
-                             if (objArrProcess != null && objArrProcess.Length > 0)
-                                 strCurrentUserName = objArrProcess[0].StartInfo.EnvironmentVariables["username"];
-                         }
-                         if (string.IsNullOrEmpty(strCurrentUserName))
-                             strCurrentUserName = "SYSTEM";
-                     }
-                 }
-                 catch (Exception ex)
-                 {
-                     EventLog.WriteEntry("Application", Environment.MachineName + "-" + Environment.UserName + "5 Detay:" + ex.ToString(), EventLogEntryType.Information, 6543);
+                    if (objArrProcess != null && objArrProcess.Length > 0)
+                        strCurrentUserName = objArrProcess[0].StartInfo.EnvironmentVariables["username"];
+                }
+                if (string.IsNullOrEmpty(strCurrentUserName))
+                    strCurrentUserName = "SYSTEM";
+            }
+        }
+        catch (Exception ex)
+        {
+            EventLog.WriteEntry("Application", Environment.MachineName + "-" + Environment.UserName + "5 Detay:" + ex.ToString(), EventLogEntryType.Information, 6543);
 
-                 }
-                 EventLog.WriteEntry("Application", "LogActivities /CheckConnectionState1", EventLogEntryType.Information, 6543);
-                 EventLog.WriteEntry("Application", "LogActivities / CheckConnectionState2", EventLogEntryType.Information, 6543);
-             }*/
+        }
+        EventLog.WriteEntry("Application", "LogActivities /CheckConnectionState1", EventLogEntryType.Information, 6543);
+        EventLog.WriteEntry("Application", "LogActivities / CheckConnectionState2", EventLogEntryType.Information, 6543);
+    }*/
         /* string CheckConnection(string wsAddress)
    {
        string result = "";

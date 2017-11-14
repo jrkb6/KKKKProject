@@ -4,8 +4,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KKKPr", "KKKPr\KKKPr.csproj", "{A8B0A674-BCA0-48ED-A9F9-0311B46D26A7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B2B6EF4B-9A28-48E4-816B-7A9156CF7608} = {B2B6EF4B-9A28-48E4-816B-7A9156CF7608}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrTest", "PrTest\PrTest.csproj", "{B30045CB-C56B-4908-BF42-FB5CD86156B3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogService", "LogService\LogService.csproj", "{B2B6EF4B-9A28-48E4-816B-7A9156CF7608}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +26,10 @@ Global
 		{B30045CB-C56B-4908-BF42-FB5CD86156B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B30045CB-C56B-4908-BF42-FB5CD86156B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B30045CB-C56B-4908-BF42-FB5CD86156B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2B6EF4B-9A28-48E4-816B-7A9156CF7608}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2B6EF4B-9A28-48E4-816B-7A9156CF7608}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2B6EF4B-9A28-48E4-816B-7A9156CF7608}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2B6EF4B-9A28-48E4-816B-7A9156CF7608}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

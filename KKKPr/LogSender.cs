@@ -1,4 +1,5 @@
-﻿using NLog;
+﻿using KKKPr.ServiceReference1;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,13 +11,19 @@ namespace KKKPr
     public class LogSender
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
-        public static void sendLog(Log lg)
+        public void sendLog(CompositeLog lg)
         {
-
-            //
+            ServiceReference1.Service1Client client = new ServiceReference1.Service1Client();
+            client.Open();
+            try { } catch (Exception ex) { } finally { }
+            client.Close();
+           
         }
 
-        public static void setWCFConnection() { }
+        public void setWCFConnection() {
+           
+        }
+
 
 
     }
