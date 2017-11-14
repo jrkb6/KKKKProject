@@ -16,9 +16,9 @@ namespace KKKPr
 {
     public class ConnectionChecker
     {
-    private static string mWebServiceInternet = System.Configuration.ConfigurationManager.AppSettings["WebServiceInternet"];
-    private static Logger logger = LogManager.GetCurrentClassLogger();
-    private const string CHECKHOST = "google.com";
+    private static string mWebServiceInternet = System.Configuration.ConfigurationManager.AppSettings["WebServiceInternet"]; //webServiceInfo
+    private static Logger logger = LogManager.GetCurrentClassLogger(); //logger for developer
+    private const string CHECKHOST = "google.com";  //const connaction checker
     Log lg;
     public ConnectionChecker()
     {
