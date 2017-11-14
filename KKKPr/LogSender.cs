@@ -15,7 +15,13 @@ namespace KKKPr
         {
             ServiceReference1.Service1Client client = new ServiceReference1.Service1Client();
             client.Open();
-            try { } catch (Exception ex) { } finally { }
+            try {
+                client.sendLog(lg);
+            } catch (Exception ex) {
+                logger.Error("Error: " + ex.ToString());
+            } finally {
+
+            }
             client.Close();
            
         }
