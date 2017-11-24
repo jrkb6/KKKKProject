@@ -14,24 +14,22 @@ namespace KKKPr
         public void sendLog(CompositeLog lg)
         {
             ServiceReference1.Service1Client client = new ServiceReference1.Service1Client();
-            client.Open();
+            
             try {
+                logger.Debug("Trying to connect with WCF service.");
+                client.Open();
                 client.sendLog(lg);
+                logger.Trace("Log sended with success");
+                client.Close();
+                logger.Trace("WCF connection closed");
             } catch (Exception ex) {
                 logger.Error("Error: " + ex.ToString());
-            } finally {
-
-            }
-            client.Close();
+                client.Abort(); //delete everything in the connection
+            } 
+            
            
         }
-
-        public void setWCFConnection() {
-           
-        }
-
-
-
+        
     }
 
 }

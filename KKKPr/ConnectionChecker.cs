@@ -20,86 +20,126 @@ namespace KKKPr
     private static string mWebServiceInternet = System.Configuration.ConfigurationManager.AppSettings["WebServiceInternet"]; //webServiceInfo
     private static Logger logger = LogManager.GetCurrentClassLogger(); //logger for developer
     private const string CHECKHOST = "google.com";  //const connaction checker
-
-        LogSender lgs = new LogSender();
+     LogSender logSender = new LogSender();
     public ConnectionChecker()
     {
+        logger.Trace("chk instance created");
+            /*
+             * set handlers from network static class
+             * */
         NetworkChange.NetworkAddressChanged += new NetworkAddressChangedEventHandler(NetworkChange_NetworkAddressChanged);
-        NetworkChange.NetworkAvailabilityChanged += new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
-    }
+        NetworkChange.NetworkAvailabilityChanged += NetworkChange_NetworkAvailabilityChanged;
+       
+   }
     public void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
     {
-       logger.Debug("NetworkChanged");
-        if (e.IsAvailable)
-        {
-            isStillConnected(CHECKHOST);
+       logger.Debug("NetworkAvailabilityChanged got");
+            if (e.IsAvailable)
+            {
+                logger.Trace("Network changed to up");
+                isStillConnected(CHECKHOST);
+            }
+            else
+            {
+                logger.Trace("Network changed to down." );
+            }
+
         }
-    }
     public void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
     {
-        logger.Debug("Network Adress changed.");
-        NetworkInterface[] adapters = NetworkInterface.GetAllNetworkInterfaces();
-        bool flagcheckConnection = false;
-
-        foreach (NetworkInterface n in adapters)
-        {
-            if (n.OperationalStatus == OperationalStatus.Up)
+        logger.Debug("NetworkAdressChanged got");
+            NetworkInterface[] adapters = null;
+            try
             {
-                //NEED TO FIX
-                  var address = NetworkInterface
-                 .GetAllNetworkInterfaces()
-                 .Where(i => i.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 ||
-                             i.NetworkInterfaceType == NetworkInterfaceType.Ethernet )
-                 .SelectMany(i => i.GetIPProperties().UnicastAddresses)
-                 .Where(a => a.Address.AddressFamily == AddressFamily.InterNetwork && !a.Address.ToString().Equals("127.0.0.1"))
-                 .Select(a => a.Address.ToString())
-                 .ToList();
-                    logger.Trace("One or more interface is up: {0}", address.First());
-                    
-                    flagcheckConnection = true;
-                break;
+                adapters = NetworkInterface.GetAllNetworkInterfaces();
+                
             }
-        }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+
+            logger.Trace("Adapter info loaded");
+            bool flagcheckConnection = false;
+
+            foreach (NetworkInterface n in adapters)
+            {
+                if (n.NetworkInterfaceType.Equals(NetworkInterfaceType.Loopback))
+                    continue;
+                if (n.OperationalStatus == OperationalStatus.Up) //one of the interface is up set flag truıe
+                {
+                    logger.Trace(n.Description);
+                    
+                    //linq for the connected networkinterface to get ip adress
+                   // var address = NetworkInterface
+                   //.GetAllNetworkInterfaces()
+                   //.Where(i => i.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 ||
+                   //            i.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
+                   //.SelectMany(i => i.GetIPProperties().UnicastAddresses)
+                   //.Where(a => a.Address.AddressFamily == AddressFamily.InterNetwork && !a.Address.ToString().Equals("127.0.0.1")) //if local ip ignore it
+                   //.Select(a => a.Address.ToString())
+                   //.FirstOrDefault();
+                   // logger.Trace("One or more interface is up: {0}", address.First()); //see ip adress on log
+
+                    flagcheckConnection = true; //set connection flag true.
+                    break;  //no need to iterate all interfaces.
+                }
+                else {
+                    logger.Trace("CONNECTION DOWN"); //see ip adress on log
+                    flagcheckConnection = false;
+                }
+            }
 
             if (flagcheckConnection)
-                logger.Debug("Connection found checking is still connected.");
-           isStillConnected(CHECKHOST);
-    }
+            { //if connected then check
+                logger.Trace("Connection found checking is still connected.");
+                isStillConnected(CHECKHOST);
+            }
+            else {
+                logger.Trace("No connection found.");
+            }
+        }
     bool isStillConnected(string host) {
-            logger.Debug("Checking connection in isStillConnected");
-       if (checkConnectionwithPing(host))
-        {
-                //Create and send Log.
-                //User usr = new User(getUserName());
-                //Machine mch = new Machine(Environment.MachineName, Dns.GetHostAddresses(Environment.MachineName)[1].ToString());
+            logger.Trace("Checking connection in isStillConnected");
+            if (checkConnectionwithPing(host))
+            {
+                
                 Log log = new Log(getUserName(), Environment.MachineName, Dns.GetHostAddresses(Environment.MachineName)[1].ToString(), DateTime.Now);
                 log.logDate = DateTime.Now;
 
-                logger.Trace("Log created with: " + log.user +" " +log.machine);
-                //send log 
-                try {
+                logger.Trace("Log created with: " + log.user + " " + log.machine);
+                
+                try
+                {
                     logger.Trace("Trying to send Log");
-                    logger.Debug(" Map to wcf object");
+                    logger.Trace(" Map to wcf object");
+                    //map object to send to WCF service
                     CompositeLog cmpLog = new CompositeLog();
-                    log.user = cmpLog.user;
-                    log.machine = cmpLog.machine;
-                    log.machineIP = cmpLog.machineIP;
-                    log.logDate = cmpLog.logDate;
+                    cmpLog.machine = log.machine;
+                    cmpLog.machineIP = log.machineIP;
+                    cmpLog.logDate = log.logDate;
+                    cmpLog.user = log.user;
+                    
                     logger.Trace(" Created succesfully: " + log.user.Equals(cmpLog.user).ToString());
-                   lgs.sendLog(cmpLog);
-                } catch (Exception ex) {
-                    logger.Debug("Failure to send " + ex.ToString());
-                } finally {
+                    logSender.sendLog(cmpLog);
                 }
+                catch (Exception ex)
+                {
+                    logger.Error(ex, "Failure to send ");
+                }
+                
             }
-            logger.Trace("No connection found for logging.");
+            else {
+                logger.Trace("No connection found for logging.");
+            }
+            
         return false;
     }
     public bool checkConnectionwithPing(string host)
     {
         try
         {
-            logger.Debug("Trying to ping google");
+            logger.Trace("Trying to ping google");
             Ping myPing = new Ping();
             byte[] buffer = new byte[32];
             int timeout = 1000;
@@ -109,7 +149,7 @@ namespace KKKPr
         }
         catch (Exception ex)
         {
-               logger.Trace("Failed to connect." + ex.ToString());
+               logger.Trace(ex, "Failure to send ping ");
             return false;
         }
     }
@@ -121,7 +161,7 @@ namespace KKKPr
             string processname = String.Empty;
             try
             {
-                logger.Debug("Trying to get username with explorer");
+                logger.Trace("Trying to get username with explorer");
                 ObjectQuery sq = new ObjectQuery("Select * from Win32_Process where Name='explorer.exe'"); //("Select * from Win32_Process Where ProcessID = '" + PID + "'");
                 ManagementObjectSearcher searcher = new ManagementObjectSearcher(sq);
                 ManagementObject op = new ManagementObject();
@@ -151,7 +191,7 @@ namespace KKKPr
             }
             catch (Exception ex)
             {
-                logger.Debug("Failed to get userName: "+ ex.ToString());
+                logger.Error(ex, "Failed to get userName");
                 return null;
             }
 
@@ -159,81 +199,11 @@ namespace KKKPr
 
         public void Dispose()
         {
+            logger.Debug("Connection checker dispose");
             NetworkChange.NetworkAddressChanged -= new NetworkAddressChangedEventHandler(NetworkChange_NetworkAddressChanged);
             NetworkChange.NetworkAvailabilityChanged -= new NetworkAvailabilityChangedEventHandler(NetworkChange_NetworkAvailabilityChanged);
         }
-        /* void CheckConnectionState()
-    {
-        try
-        {
-            string resInternet = CheckConnection(mWebServiceInternet);
-            if (!(resInternet == "" || resInternet.StartsWith("hata")))
-            {
-                // WriteLog("Network Changed.");
-                string[] arr = resInternet.Split('#');
-                DateTime userLogDate = DateTime.Now;
-                DateTime parsed = DateTime.Now;
-
-                //log olarak webservis saatini yazalim istendi
-                if (arr.Length > 0)
-                {
-                    if (DateTime.TryParseExact(arr[1], "dd/MM/yyyy hh:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out parsed))
-                        userLogDate = parsed;
-                }
-                string strCurrentUserName = Environment.UserName;
-                strCurrentUserName = GetUserName().username;
-                if (string.IsNullOrEmpty(strCurrentUserName))
-                {
-                    System.Diagnostics.Process[] objArrProcess = System.Diagnostics.Process.GetProcessesByName("explorer");
-
-                    if (objArrProcess != null && objArrProcess.Length > 0)
-                        strCurrentUserName = objArrProcess[0].StartInfo.EnvironmentVariables["username"];
-                }
-                if (string.IsNullOrEmpty(strCurrentUserName))
-                    strCurrentUserName = "SYSTEM";
-            }
-        }
-        catch (Exception ex)
-        {
-            EventLog.WriteEntry("Application", Environment.MachineName + "-" + Environment.UserName + "5 Detay:" + ex.ToString(), EventLogEntryType.Information, 6543);
-
-        }
-        EventLog.WriteEntry("Application", "LogActivities /CheckConnectionState1", EventLogEntryType.Information, 6543);
-        EventLog.WriteEntry("Application", "LogActivities / CheckConnectionState2", EventLogEntryType.Information, 6543);
-    }*/
-        /* string CheckConnection(string wsAddress)
-   {
-       string result = "";
-       try
-       {
-           Thread.Sleep(1500);
-           //WSInternetAccess.CheckStateSoapClient cs = new WSInternetAccess.CheckStateSoapClient();
-           //cs.Endpoint.Address = new System.ServiceModel.EndpointAddress(wsAddress);
-           //cs.ClientCredentials.Windows.ClientCredential = System.Net.CredentialCache.DefaultNetworkCredentials;
-           string hostname = Dns.GetHostName();
-           string userIPs = "";          
-           for (int i = Dns.GetHostEntry(hostname).AddressList.Length; i > 0; i--)
-           {
-               userIPs += Dns.GetHostEntry(hostname).AddressList[i - 1].ToString() + " - ";
-           }
-           userIPs += Guid.NewGuid().ToString();
-           string strCurrentUserName = Environment.UserName;
-           strCurrentUserName = GetUserName().username;
-           if (string.IsNullOrEmpty(strCurrentUserName))
-           {
-               System.Diagnostics.Process[] objArrProcess = System.Diagnostics.Process.GetProcessesByName("explorer");
-               if (objArrProcess.Length > 0)
-                   strCurrentUserName = objArrProcess[0].StartInfo.EnvironmentVariables["username"];
-           }
-       }
-       catch (Exception ex)
-       {
-           result = "hata:" + ex.ToString();
-           EventLog.WriteEntry("Application", Environment.MachineName + "-" + Environment.UserName + "6 Detay:" + ex.ToString(), EventLogEntryType.Information, 6543);
-       }
-       EventLog.WriteEntry("Application", result + "xxxxx");
-       return result;
-   }*/
+        
     }
 
 }

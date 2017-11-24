@@ -13,7 +13,7 @@
           <Property Name="machinename" Type="varchar" MaxLength="50" />
           <Property Name="machineIp" Type="varchar" MaxLength="50" />
           <Property Name="Date" Type="varchar" MaxLength="50" />
-          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
         </EntityType>
         <EntityContainer Name="LogDatabaseModelStoreContainer">
           <EntitySet Name="Logs" EntityType="Self.Logs" Schema="dbo" store:Type="Tables" />
@@ -33,7 +33,7 @@
           <Property Name="machinename" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="machineIp" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Date" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
         </EntityType>
       </Schema>
     </edmx:ConceptualModels>

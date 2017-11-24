@@ -22,8 +22,12 @@ namespace LogService
             try {
                 using (LogDatabaseEntities2 db = new LogDatabaseEntities2())
                 {
-                    Logs log;
-                    log = Mapper.Map<Logs>(lg);
+
+                    Logs log = new Logs();
+                    log.username = lg.user;
+                    log.machineIp = lg.machineIP;
+                    log.machinename = lg.machine;
+                    log.Date = lg.logDate.ToShortDateString();
                     db.Logs.Add(log);
                     db.SaveChanges();
 

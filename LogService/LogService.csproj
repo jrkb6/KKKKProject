@@ -163,7 +163,6 @@
     <None Include="_bin_deployableAssemblies\x86\Microsoft.VC90.CRT\Microsoft.VC90.CRT.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AutoMapBoot.cs" />
     <Compile Include="Logdb.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
