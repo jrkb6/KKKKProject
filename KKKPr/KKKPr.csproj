@@ -54,9 +54,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConnectionChecker.cs" />
+    <Compile Include="UserInfo.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="LogSender.cs" />
     <Compile Include="Machine.cs" />
+    <Compile Include="MainPro.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
