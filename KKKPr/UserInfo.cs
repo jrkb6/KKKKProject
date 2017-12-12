@@ -11,7 +11,20 @@ namespace KKKPr
     public class UserInfo
     {
         private static Logger logger = LogManager.GetCurrentClassLogger(); //logger for developer
-        public static string getUserName()
+        string username;
+        public string UserName {
+            get
+            {
+                if(string.IsNullOrWhiteSpace(username))
+                {
+                    username = getUserName();
+                }
+
+                return username;
+            }
+        }
+
+        private  string getUserName()
         {
             string userName = String.Empty;
             string Domain = String.Empty;
@@ -52,7 +65,7 @@ namespace KKKPr
                 logger.Error(ex, "Failed to get userName");
                 return null;
             }
-
         }
+
     }
 }

@@ -12,7 +12,7 @@ namespace KKKPr
     public class LogSender
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
-        public void sendLog(CompositeLog lg)
+        public static void sendLog(CompositeLog lg)
         {
             ServiceReference1.Service1Client client = new ServiceReference1.Service1Client(); 
             try {
@@ -27,12 +27,12 @@ namespace KKKPr
                 client.Abort(); //delete everything in the connection
             }         
         }
-        public Log createLog(string username)
+        public static Log createLog(string username,string machineName,string ipAdress)
         {
             Log log = null;
             try
             {
-                log = new Log(username, Environment.MachineName, Dns.GetHostAddresses(Environment.MachineName)[1].ToString(), DateTime.Now);
+                log = new Log(username, machineName,ipAdress, DateTime.Now);
             }
             catch (Exception ex)
             {
@@ -41,7 +41,7 @@ namespace KKKPr
             return log;
 
         }
-        public CompositeLog mapComposite(Log log)
+        public static CompositeLog mapComposite(Log log)
         {
             CompositeLog cmpLog = new CompositeLog();
             cmpLog.machine = log.machine;
@@ -50,9 +50,13 @@ namespace KKKPr
             cmpLog.user = log.user;
             return cmpLog;
         }
+        //public static void send(string username, string machineName, string ipAdress) {
+        //    sendLog( mapComposite(createLog(username, machineName, ipAdress)));
+
+        //}
 
     }
 
 }
 
-}
+
